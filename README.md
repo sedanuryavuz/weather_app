@@ -1,16 +1,23 @@
 # weather_app
 
-A new Flutter project.
+Bu proje Flutter kullanılarak geliştirilmiş bir hava durumu uygulamasıdır. Kullanıcıların güncel konumlarına veya arama yaptıkları şehirlere göre hava durumu bilgisi görüntülenmektedir. Uygulama modern arayüz, tema desteği ve animasyonlarla zenginleştirilmiştir.
 
-## Getting Started
+# Özellikler
 
-This project is a starting point for a Flutter application.
+**Splash Screen :** Açılışta kullanıcıyı karşılayan ekran.
 
-A few resources to get you started if this is your first Flutter project:
+**Clean Code Yapısı:** Widget’lar ve dosyalar düzenli bir yapıya ayrılmıştır.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**Weather API Entegrasyonu:** Gerçek zamanlı hava durumu verileri API üzerinden alınır.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Gizli API Key Yönetimi:** API anahtarı .env dosyası ile güvenli bir şekilde saklanır.
+
+**Dark/Light Tema Desteği:** Kullanıcı tercihlerine göre tema değişimi yapılabilir.
+
+**Animasyonlar:** Arayüzde kullanıcı deneyimini artıran animasyonlar kullanılmıştır.
+
+**Konum Tabanlı Hava Durumu:** Kullanıcıdan izin alarak mevcut konum üzerinden hava durumu bilgisi sunulur.
+
+**Şehir Arama Özelliği:** Kullanıcı, farklı şehirlerin hava durumunu arama yaparak öğrenebilir.
+
+
