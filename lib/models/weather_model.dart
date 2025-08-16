@@ -2,10 +2,11 @@ class Weather {
   final String cityName;
   final String temperature;
   final String description;
-  final String currentLottieAsset;
+  final String iconCode;
   final String humidity;
   final String windSpeed;
   final String pressure;
+  final String currentLottieAsset;
   final List<DailyForecast> dailyForecasts;
   final List<HourlyForecast> hourlyForecasts;
 
@@ -13,12 +14,13 @@ class Weather {
     required this.cityName,
     required this.temperature,
     required this.description,
-    required this.currentLottieAsset,
+    required this.iconCode,
     required this.humidity,
     required this.windSpeed,
     required this.pressure,
-    required this.hourlyForecasts,
+    required this.currentLottieAsset,
     required this.dailyForecasts,
+    required this.hourlyForecasts,
   });
 }
 

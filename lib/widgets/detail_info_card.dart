@@ -13,29 +13,35 @@ class DetailInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 32, color: Colors.white70),
-              const SizedBox(height: 12.0),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final cardColor = isDark ? null : Colors.blueGrey[50];
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final iconColor = isDark ? Colors.white70 : Colors.black45;
+
+    return Card(
+      color: cardColor,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 30, color: iconColor),
+            const SizedBox(height: 12.0),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: textColor,
               ),
-              const SizedBox(height: 4.0),
-              Text(title, style: TextStyle(color: Colors.white70)),
-              const Spacer(),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4.0),
+            Text(title, style: TextStyle(color: subTextColor)),
+            const Spacer(),
+          ],
         ),
       ),
     );

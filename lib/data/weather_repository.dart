@@ -1,77 +1,120 @@
-import 'package:weather_app/models/weather_model.dart';
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import '../models/weather_model.dart';
 
 class WeatherRepository {
-  Future<Weather> fetchWeather() async {
-    return Future.delayed(const Duration(seconds: 1), () {
-      const String sunny = 'assets/lottie/sunny.json';
-      const String cloudy = 'assets/lottie/cloudy.json';
-      const String storm = 'assets/lottie/storm.json';
-      const String rain = 'assets/lottie/rain.json';
+  final String apiKey = dotenv.env["API_KEY"] ?? "";
 
-      final daily = [
-        DailyForecast(
-          day: "Pazartesi",
-          lottieAsset: sunny,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Salı",
-          lottieAsset: cloudy,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Çarşamba",
-          lottieAsset: sunny,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Perşembe",
-          lottieAsset: sunny,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Cuma",
-          lottieAsset: storm,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Cumartesi",
-          lottieAsset: rain,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-        DailyForecast(
-          day: "Pazar",
-          lottieAsset: rain,
-          highTemp: "30°",
-          lowTemp: "22°",
-        ),
-      ];
+  static const List<String> weekdays = [
+    'Pazartesi',
+    'Salı',
+    'Çarşamba',
+    'Perşembe',
+    'Cuma',
+    'Cumartesi',
+    'Pazar',
+  ];
 
-      final hourly = [
-        HourlyForecast(time: "12:00", lottieAsset: sunny, temperature: "25°"),
-        HourlyForecast(time: "13:00", lottieAsset: cloudy, temperature: "20°"),
-        HourlyForecast(time: "14:00", lottieAsset: sunny, temperature: "25°"),
-        HourlyForecast(time: "15:00", lottieAsset: storm, temperature: "22°"),
-        HourlyForecast(time: "16:00", lottieAsset: rain, temperature: "25°"),
-      ];
+  Future<Weather> fetchWeatherByCity(String cityName) async {
+    final urlCurrent =
+        "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$cityName&days=7&aqi=no&alerts=no&lang=tr";
+    final currentWeather = await _fetchCurrentWeather(urlCurrent);
+    return _parseWeather(currentWeather);
+  }
 
-      return Weather(
-        cityName: "İstanbul",
-        temperature: "25°",
-        description: "Parçalı Bulutlu",
-        currentLottieAsset: cloudy,
-        humidity: "65%",
-        windSpeed: "15 km/s",
-        pressure: "1012 hPa",
-        hourlyForecasts: hourly,
-        dailyForecasts: daily,
+  Future<Weather> fetchWeatherByLocation(double lat, double lon) async {
+    final urlCurrent =
+        "https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lon&days=7&aqi=no&alerts=no&lang=tr";
+    final currentWeather = await _fetchCurrentWeather(urlCurrent);
+    return _parseWeather(currentWeather);
+  }
+
+  Future<Map<String, dynamic>> _fetchCurrentWeather(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      throw Exception("Hava durumu alınamadı: ${response.body}");
+    }
+    return json.decode(response.body);
+  }
+
+  Weather _parseWeather(Map<String, dynamic> data) {
+    final current = data['current'];
+    final location = data['location'];
+
+    final dailyForecasts = (data['forecast']['forecastday'] as List).map((day) {
+      final date = DateTime.parse(day['date']);
+      return DailyForecast(
+        day: weekdays[date.weekday - 1],
+        lottieAsset: _mapIconToLottie(day['day']['condition']['icon']),
+        highTemp: "${day['day']['maxtemp_c'].toStringAsFixed(0)}°",
+        lowTemp: "${day['day']['mintemp_c'].toStringAsFixed(0)}°",
       );
-    });
+    }).toList();
+
+    final hourlyForecasts = (data['forecast']['forecastday'][0]['hour'] as List)
+        .map((hour) {
+          final dt = DateTime.parse(hour['time']);
+          final time =
+              "${dt.hour.toString().padLeft(2, '0')}:00"; //24 saat formatı
+          return HourlyForecast(
+            time: time,
+            lottieAsset: _mapIconToLottie(hour['condition']['icon']),
+            temperature: "${hour['temp_c'].toStringAsFixed(0)}°",
+          );
+        })
+        .toList();
+
+    return Weather(
+      cityName: location['name'],
+      temperature: "${current['temp_c'].toStringAsFixed(0)}°",
+      description: current['condition']['text'],
+      iconCode: current['condition']['icon'],
+      humidity: "${current['humidity']}%",
+      windSpeed: "${current['wind_kph'].toStringAsFixed(1)} km/s",
+      pressure: "${current['pressure_mb']} hPa",
+      currentLottieAsset: _mapIconToLottie(current['condition']['icon']),
+      dailyForecasts: dailyForecasts,
+      hourlyForecasts: hourlyForecasts,
+    );
+  }
+
+  String _mapIconToLottie(String iconUrl) {
+    final fileName = iconUrl.split('/').last;
+    switch (fileName) {
+      case '113.png':
+        return "assets/lottie/sunny.json";
+      case '116.png':
+      case '119.png':
+      case '122.png':
+        return "assets/lottie/cloudy.json";
+      case '176.png':
+      case '293.png':
+      case '296.png':
+      case '299.png':
+      case '302.png':
+      case '305.png':
+        return "assets/lottie/rain.json";
+      case '386.png':
+      case '389.png':
+        return "assets/lottie/storm.json";
+      default:
+        return "assets/lottie/cloudy.json";
+    }
+  }
+
+  Future<List<String>> searchCities(String query) async {
+    if (query.isEmpty) return [];
+    final url = Uri.parse(
+      'http://api.weatherapi.com/v1/search.json?key=$apiKey&q=$query',
+    );
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+      return data.map<String>((city) => city['name'] as String).toList();
+    } else {
+      throw Exception("Şehirler yüklenirken bir hata oluştu.");
+    }
   }
 }
